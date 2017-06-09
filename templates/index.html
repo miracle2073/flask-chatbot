@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>DopeCloudersTeam</title>
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper teal lighten-2">
+            <a href="#" class="brand-logo" style="padding-left: 50px">DopeCloudersTeam ia#1</a>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col m4">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <br>
+                        <textarea id="message" class="materialize-textarea"></textarea>
+                        <label for="message">Message</label>
+                        <a id="send-button" class="waves-effect waves-light btn"><i class="material-icons right">input</i>Send</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col m8">
+                <ul class="collection" id="message-well">
+                    <li class="collection-item avatar">
+                        <i class="material-icons circle teal">new_releases</i>
+                        <span class="title">Joe</span>
+                        <p>
+                            Hi! I am Joe bot!
+                        </p>
+                    </li>
+                </ul>
+
+
+            </div>
+
+
+
+            <div class="fixed-action-btn">
+                <a class="btn-floating btn-large teal" id="menu">
+                    <i class="large material-icons">android</i>
+                </a>
+            </div>
+
+            <div class="tap-target teal" data-activates="menu">
+                <div class="tap-target-content">
+                    <h5>Joe</h5>
+                    <p id="joe-text"></p>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        function generateUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;return v.toString(16);});}
+
+        var uuid = generateUUID()
+        Materialize.toast("Start typing in message well...", 4000);
+        Materialize.toast("Your ID " + uuid + "...", 4000);
+
+        function showJoeMessage(msg) {
+            setTimeout(function () {
+                $('.tap-target').tapTarget('open');
+                $("#joe-text").text(msg)
+            }, 300);
+
+            setTimeout(function () {
+                $('.tap-target').tapTarget('close');
+            }, 2500);
+        }
+
+        showJoeMessage("Hi!")
+
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket.on('connect', function() {
+            console.log("connecting...");
+        });
+
+        socket.on('flush', function(msg) {
+            Materialize.toast(msg, 4000);
+        });
+
+        socket.on('joe', function(msg) {
+            showJoeMessage(msg);
+        });
+
+        socket.on('chat', function(data) {
+            console.log("chat", data);
+
+            var template = '<ul class="collection"><li class="collection-item avatar">' +
+                '<i class="material-icons circle teal">new_releases</i>' +
+                '<span class="title">User #' + data.user + '|' + new Date() +
+                '</span><p>' + data.msg + '</p></li></ul>';
+
+            $("#message-well").append(template)
+        });
+
+        $(document).on("click", "#send-button", function() {
+            var msg = $("#message").val()
+
+            if (msg.length > 0) {
+                socket.emit('my event', {user: uuid, msg: msg});
+                $("#message").val("")
+            }
+        });
+    </script>
+</body>
+</html>
